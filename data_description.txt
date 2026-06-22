@@ -1,0 +1,29 @@
+========================================================================
+Ames Housing Dataset - Feature Description & Data Provenance
+========================================================================
+
+PROJECT CONTEXT:
+This dataset is utilized in the AmesHousingValuation predictive engine to model and compute real estate valuations across 81 structural and environmental features. 
+
+DATA ORIGIN & DOWNLOAD:
+The raw training and testing datasets can be downloaded directly from the official Kaggle Ames Housing Competition:
+URL: https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data
+
+If cloning this repository to replicate the pipeline, download 'train.csv' and 'test.csv' from the link above and place them into this 'data/' directory.
+
+DATASET PROFILE:
+- Total Observations: 2,919
+- Total Variables: 81
+- Numerical Features: 38
+- Categorical Features: 43
+
+CORE VARIABLE SUMMARY:
+- SalePrice: The target variable representing the property's sale price in USD (highly right-skewed; optimized via log-transformation in our pipeline).
+- OverallQual: Rates the overall material and finish of the house (1-10 scale).
+- GrLivArea: Above grade (ground) living area square feet.
+- GarageCars: Size of garage in car capacity.
+- TotalBsmtSF: Total square feet of basement area.
+- Neighborhood: Physical locations within Ames city limits.
+
+MISSING VALUES:
+The dataset contains 17,166 missing values across various columns representing features not present on a property (e.g., no pool, no garage). These are programmatically imputed using custom median and mode strategies within our analysis pipeline.
