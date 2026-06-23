@@ -1,16 +1,15 @@
 # Ames Housing Valuation & Predictive Modeling
 
 ## 📌 Executive Summary
-This project applies advanced data science and predictive modeling techniques to estimate residential property values in Ames, Iowa. Using the comprehensive Ames Housing Dataset, the goal is to engineer high-impact structural features and deploy robust regression models that accurately capture market dynamics, minimize valuation errors, and isolate the key economic drivers of property pricing.
+This project applies advanced data science and predictive modeling techniques to estimate residential property values in Ames, Iowa. Utilizing the comprehensive Ames Housing Dataset (2,919 observations across 81 features), the goal is to resolve data sparsity, handle high-dimensional categorical features, and deploy robust regression models. By balancing the bias-variance tradeoff, this study isolates key economic drivers of property pricing and minimizes valuation errors.
 
 ---
 
 ## 📊 Dataset Overview
 The dataset contains detailed records of residential home sales in Ames, Iowa, featuring unique characteristics across structural, environmental, and location-based variables.
 * **Target Variable:** `SalePrice` (The property's final sale price in USD).
-* **Key Features Monitored:** 
-  * **Structural:** Above-grade living area (`GrLivArea`), total basement square footage, number of bathrooms, and garage capacity.
-  * **Quality/Condition:** Overall material and finish ratings, year built, and remodeling dates.
+* **Key Features Monitored:** * **Structural:** Above-grade living area (`GrLivArea`), total basement square footage, number of bathrooms, and garage capacity.
+  * **Quality/Condition:** Overall material and finish ratings (`OverallQual`), year built, and remodeling dates.
   * **Location:** Neighborhood classifications, zoning types, and proximity to major infrastructure.
 
 ---
@@ -18,35 +17,44 @@ The dataset contains detailed records of residential home sales in Ames, Iowa, f
 ## 🛠️ Project Architecture & Workflow
 
 ### 1. Exploratory Data Analysis (EDA)
-* Handled right-skewed distributions in the target variable (`SalePrice`) using logarithmic transformations.
-* Visualized and isolated extreme spatial outliers (e.g., properties with massive living areas that sold for uncharacteristically low prices).
-* Analyzed multicollinearity among features using correlation matrices.
+* **Target Variable Transformation:** Addressed severe right-skewness (skewness score of 1.883) by applying a log transformation: $\log(1 + \text{SalePrice})$. This successfully stabilized target variance and brought skewness down to an optimal 0.121.
+* **Outlier Detection:** Visualized and isolated two extreme spatial outliers representing properties with massive living areas (`GrLivArea` > 4,000 sq. ft.) that sold for uncharacteristically low prices (< $185,000). Removing these data points prevented distortion in linear gradient updates.
+* **Multicollinearity Analysis:** Conducted thorough correlation matrix evaluations to isolate heavily co-linear dimensions (e.g., garage area vs. garage cars).
 
 ### 2. Feature Engineering & Data Cleaning
-* **Missing Data Imputation:** Handled missing categorical attributes by treating them as a distinct structural absence (e.g., encoding missing pool data as "No Pool") and imputed numerical gaps using neighborhood medians.
-* **Feature Creation:** Created interaction terms such as `TotalSF` (combining basement, first floor, and second-floor square footage) and property age metrics at the time of sale.
-* **Categorical Encoding:** Converted ordinal quality metrics into sequential integers and applied One-Hot Encoding to nominal variables.
+* **Missing Data Imputation:** Resolved 17,166 missing data points. Numerical features were imputed using column medians, while missing categorical values were mapped systematically to a string flag (`"None"`) representing the physical absence of a feature (e.g., no pool or no basement).
+* **Categorical Encoding:** Applied One-Hot Encoding to the 43 categorical variables, turning qualitative indices into a sparse framework suitable for continuous model alignment.
 
 ### 3. Model Development & Evaluation
-We evaluated and tuned multiple predictive algorithms to minimize Root Mean Squared Error (RMSE):
-* **Baseline Linear Regression:** Established standard pricing coefficients.
-* **Regularized Models (Ridge / Lasso):** Utilized $L_1$ and $L_2$ regularization to eliminate non-impactful features and prevent overfitting.
-* **Advanced Ensemble Methods:** [Mention if you used Random Forests, Gradient Boosting, or XGBoost here].
+Predictive algorithms were optimized using **Grid Search over a 5-Fold Cross-Validation** strategy to minimize Root Mean Squared Error (RMSE):
+* **Baseline Linear Regression:** Built ordinary least squares (OLS) and Ridge regression metrics to establish standard pricing coefficients.
+* **Regularized Selection (Lasso):** Leveraged an $L_1$ regularization penalty ($\alpha = 0.0005$) to enforce feature sparsity and automatically drop noisy categorical dummy coordinates.
+* **Advanced Ensemble Methods:** Deployed tree-based frameworks including **Random Forest** and **XGBoost** to test non-linear interactions.
 
 ---
 
 ## 📈 Key Findings & Results
-* **Top Performance:** Our champion model achieved a cross-validated $R^2$ score of `0.XX` and an RMSE of `X.XXXX` on the test partition.
-* **Primary Value Drivers:** The top three structural drivers of real estate valuation in Ames were identified as:
-  1. Total Above-Grade Living Area (`GrLivArea`)
-  2. Overall Material and Finish Quality (`OverallQual`)
-  3. Neighborhood Location (with specific premiums tied to neighborhoods like [Insert 1-2 top neighborhoods, e.g., Northridge/Stone Brook]).
+
+### Model Performance Summary
+| Model | Cross-Validated RMSE | Validation MAE | Validation $R^2$ Score | Optimal Hyperparameters |
+| :--- | :---: | :---: | :---: | :--- |
+| **Lasso Regression (Champion)** | **0.1171** | **0.0839** | **91.86%** | $\alpha = 0.0005$ |
+| **XGBoost** | 0.1197 | 0.0877 | 91.50% | `learning_rate` = 0.05, `max_depth` = 5 |
+| **Ridge Regression** | 0.1229 | 0.0860 | 91.05% | $\alpha = 10.0$ |
+| **Random Forest** | 0.1439 | 0.0968 | 87.72% | `n_estimators` = 300, `max_depth` = 20 |
+
+### Core Insights
+* **The Parametric Advantage:** While tree ensembles like Random Forest exhibited high training capacity, they suffered from variance issues and memorized noise across the high-dimensional, sparse dummy matrices generated by neighborhood coordinates. Lasso's $L_1$ penalty successfully performed continuous feature selection, yielding the best generalization performance.
+* **Primary Value Drivers:** The Lasso model isolated three dominant real estate pricing dimensions:
+  1. **Overall Material & Finish Quality (`OverallQual`):** The absolute strongest structural multiplier.
+  2. **Above-Grade Living Area (`GrLivArea`):** The primary physical square-footage driver.
+  3. **Spatial Economics (Neighborhood Premiums):** Clear, statistically heavy positive weights isolated premiums for specific neighborhoods, led by **Northridge Heights** and **Stone Brook**.
 
 ---
 
 ## 💻 How to Run the Project
 
 ### Prerequisites
-Ensure you have Python 3.x installed along with the required dependencies:
+Ensure you have Python 3.x installed along with the required analytical dependencies:
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn jupyter
+pip install pandas numpy scikit-learn matplotlib seaborn xgboost jupyter
